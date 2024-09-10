@@ -7,26 +7,46 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SigninPage = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleEmailSignin = async () => {
-    try {
-      const response = await fetch('http://localhost:8001/api/users/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({email, password}),
-      });
+  // Email validation function
+  const validateEmail = email => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
 
-      const data = await response.json();
+  const handleEmailSignin = async () => {
+    // Validate email before proceeding
+    if (!validateEmail(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    if (password === '') {
+      Alert.alert('Empty Password', 'Please enter your password.');
+      return;
+    }
+    try {
+      const response = await fetch(
+        'http://192.168.1.100:8001/api/auth/signin',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({email, password}),
+        },
+      );
       if (response.ok) {
-        // Handle successful sign-in, e.g., navigate to another screen or store user token
-        console.log('Sign-in successful', data);
+        // Store user email AsyncStorage after successful login
+        await AsyncStorage.setItem('userEmail', email);
+        Alert.alert('Login Successful', 'Welcome back!');
       } else {
         // Handle sign-in error, e.g., display an error message
         console.log('Sign-in failed', data.message);
@@ -95,7 +115,7 @@ const SigninPage = ({navigation}) => {
         <Text style={styles.emailButtonText}>Sign In</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
         <Text style={styles.signupText}>
           Don't you have an account? Go to Sign Up
         </Text>

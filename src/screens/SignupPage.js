@@ -11,28 +11,47 @@ import {
 } from 'react-native';
 
 const SignupPage = ({navigation}) => {
-  const [name, setName] = useState('');
-  const [country, setCountry] = useState('');
-  const [phone, setPhone] = useState('');
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
 
+  // Email validation function
+  const validateEmail = email => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
   const handleEmailSignup = async () => {
-    try {
-      const response = await fetch('http://localhost:8001/api/users/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({name, country, phone, isSubscribed}),
-      });
+    // Validate email before proceeding
+    if (!validateEmail(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
 
-      const data = await response.json();
+    if (password === '') {
+      Alert.alert('Empty Password', 'Please enter your password.');
+      return;
+    }
+    console.log('Sign-in successful', username, email, password);
+    try {
+      const response = await fetch(
+        'http://192.168.1.100:8001/api/auth/signup',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({username, email, password}),
+        },
+      );
       if (response.ok) {
         // Handle successful sign-up
-        console.log('Sign-up successful', data);
+        console.log('Sign-up successful');
+        navigation.navigate('SignIn');
       } else {
         // Handle sign-up error
-        console.log('Sign-up failed', data.message);
+        console.log('Sign-up failed');
+        Alert.alert('Sign-up Error', 'There was an error during sign-up.');
       }
     } catch (error) {
       console.error('Error signing up:', error);
@@ -51,9 +70,9 @@ const SignupPage = ({navigation}) => {
     setIsSubscribed(previousState => !previousState);
   };
 
-  const clearName = () => setName('');
-  const clearCountry = () => setCountry('');
-  const clearPhone = () => setPhone('');
+  const clearUserName = () => setUserName('');
+  const clearPassword = () => setPassword('');
+  const clearEmail = () => setEmail('');
 
   return (
     <View style={styles.container}>
@@ -63,12 +82,12 @@ const SignupPage = ({navigation}) => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
+          placeholder="UserName"
+          value={username}
+          onChangeText={setUserName}
         />
-        {name !== '' && (
-          <TouchableOpacity onPress={clearName} style={styles.clearButton}>
+        {username !== '' && (
+          <TouchableOpacity onPress={clearUserName} style={styles.clearButton}>
             <Text style={styles.clearButtonText}>×</Text>
           </TouchableOpacity>
         )}
@@ -77,12 +96,12 @@ const SignupPage = ({navigation}) => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Country"
-          value={country}
-          onChangeText={setCountry}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
         />
-        {country !== '' && (
-          <TouchableOpacity onPress={clearCountry} style={styles.clearButton}>
+        {email !== '' && (
+          <TouchableOpacity onPress={clearEmail} style={styles.clearButton}>
             <Text style={styles.clearButtonText}>×</Text>
           </TouchableOpacity>
         )}
@@ -91,12 +110,13 @@ const SignupPage = ({navigation}) => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Phone"
-          value={phone}
-          onChangeText={setPhone}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
         />
-        {phone !== '' && (
-          <TouchableOpacity onPress={clearPhone} style={styles.clearButton}>
+        {password !== '' && (
+          <TouchableOpacity onPress={clearPassword} style={styles.clearButton}>
             <Text style={styles.clearButtonText}>×</Text>
           </TouchableOpacity>
         )}
@@ -127,7 +147,7 @@ const SignupPage = ({navigation}) => {
       </View>
 
       <TouchableOpacity style={styles.appleButton} onPress={handleEmailSignup}>
-        <Text style={styles.emailButtonText}>Next</Text>
+        <Text style={styles.emailButtonText}>Sign Up with Email</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.appleButton} onPress={handleGoogleSignup}>
