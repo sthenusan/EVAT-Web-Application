@@ -32,7 +32,6 @@ const SignupPage = ({navigation}) => {
       Alert.alert('Empty Password', 'Please enter your password.');
       return;
     }
-    console.log('Sign-in successful', username, email, password);
     try {
       const response = await fetch(
         'http://192.168.1.100:8001/api/auth/signup',
